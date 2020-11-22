@@ -3,8 +3,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 export function activate(context: ExtensionContext) {
+	let title = 'Preview <file-name>';
 	let command = commands.registerCommand('vscode-mcmodel-preview.view', () => {
-		const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, { enableScripts: true });
+		const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.One, { enableScripts: true });
 
 		const threePath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'three.min.js');
 		const viewerCSSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.css');
