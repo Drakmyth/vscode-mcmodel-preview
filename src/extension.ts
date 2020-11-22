@@ -1,27 +1,31 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { ExtensionContext, commands, window, ViewColumn, Uri, WebviewPanel } from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
+	let title = 'Preview <file-name>';
+	let command = commands.registerCommand('vscode-mcmodel-preview.view', () => {
+		const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-mcmodel-preview" is now active!');
+		const threePath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'three.min.js');
+		const viewerCSSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.css');
+		const viewerJSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.js');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-mcmodel-preview.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+		const viewerHTMLPath = path.join(context.extensionPath, 'src', 'viewer', 'viewer.html');
+		const rawHtml = fs.readFileSync(viewerHTMLPath, "utf-8");
+		const html = rawHtml.replace('{{viewercss-path}}', viewerCSSPath)
+							.replace('{{three-path}}', threePath)
+							.replace('{{viewerjs-path}}', viewerJSPath);
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Minecraft Model Previewer!');
+		panel.webview.html = html;
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(command);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
+
+function getWebviewPath(panel: WebviewPanel, ...paths: string[]) {
+	const diskPath = Uri.file(path.join(...paths));
+	return panel.webview.asWebviewUri(diskPath).toString();
+}
