@@ -51,4 +51,4 @@ License
 -------
 vscode-mcmodel-preview is licensed under the MIT License (MIT). See LICENSE for details.
 
-Individual assets may be used under different licenses. See assets/README for specific licensing details.
+Individual assets may be in use under different licenses. See assets/README for specific licensing details.
