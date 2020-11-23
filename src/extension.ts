@@ -2,10 +2,13 @@ import { ExtensionContext, commands, window, ViewColumn, Uri, WebviewPanel } fro
 import * as path from 'path';
 import * as fs from 'fs';
 import * as Ajv from 'ajv';
+import * as vscode from 'vscode';
 
 export function activate(context: ExtensionContext) {
-	let title = 'Preview <file-name>';
 	let command = commands.registerCommand('vscode-mcmodel-preview.view', () => {
+		const editor = vscode.window.activeTextEditor;
+		const filename = path.basename(editor?.document.fileName || '');
+		const title = 'Preview ' + filename;
 		const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
 
 		const threePath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'three.min.js');
