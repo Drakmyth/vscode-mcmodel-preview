@@ -1,0 +1,231 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Drakmyth/vscode-mcmodel-preview/master/src/validation/model.schema.json",
+    "type": "object",
+    "properties": {
+        "parent": {
+            "type": "string"
+        },
+        "ambientocclusion": {
+            "type": "boolean"
+        },
+        "display": {
+            "type": "object",
+            "properties": {
+                "thirdperson_righthand": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "thirdperson_lefthand": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "firstperson_righthand": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "firstperson_lefthand": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "gui": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "head": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "ground": {
+                    "$ref": "#/definitions/display-position"
+                },
+                "fixed": {
+                    "$ref": "#/definitions/display-position"
+                }
+            },
+            "additionalProperties": false
+        },
+        "textures": {
+            "type": "object",
+            "properties": {
+                "particle": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "elements": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "$ref": "#/definitions/element-bound"
+                    },
+                    "to": {
+                        "$ref": "#/definitions/element-bound"
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "properties": {
+                            "origin": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "minItems": 3,
+                                "maxItems": 3
+                            },
+                            "axis": {
+                                "type": "string",
+                                "enum": [
+                                    "x",
+                                    "y",
+                                    "z"
+                                ]
+                            },
+                            "angle": {
+                                "type": "number",
+                                "enum": [
+                                    -45,
+                                    -22.5,
+                                    0,
+                                    22.5,
+                                    45
+                                ]
+                            },
+                            "rescale": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "shade": {
+                        "type": "boolean"
+                    },
+                    "faces": {
+                        "type": "object",
+                        "properties": {
+                            "down": {
+                                "$ref": "#/definitions/element-face"
+                            },
+                            "up": {
+                                "$ref": "#/definitions/element-face"
+                            },
+                            "north": {
+                                "$ref": "#/definitions/element-face"
+                            },
+                            "south": {
+                                "$ref": "#/definitions/element-face"
+                            },
+                            "west": {
+                                "$ref": "#/definitions/element-face"
+                            },
+                            "east": {
+                                "$ref": "#/definitions/element-face"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    },
+    "anyOf": [
+        {
+            "required": [
+                "parent"
+            ]
+        },
+        {
+            "required": [
+                "elements"
+            ]
+        }
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "display-position": {
+            "type": "object",
+            "properties": {
+                "rotation": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "translation": {
+                    "type": "array",
+                    "items": {
+                        "type": "number",
+                        "minimum": -80,
+                        "maximum": 80
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "scale": {
+                    "type": "array",
+                    "items": {
+                        "type": "number",
+                        "maximum": 4
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                }
+            },
+            "additionalProperties": false
+        },
+        "element-face": {
+            "type": "object",
+            "properties": {
+                "uv": {
+                    "type": "array",
+                    "items": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 16
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                },
+                "texture": {
+                    "type": "string"
+                },
+                "cullface": {
+                    "type": "string",
+                    "enum": [
+                        "down",
+                        "up",
+                        "north",
+                        "south",
+                        "west",
+                        "east"
+                    ]
+                },
+                "rotation": {
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        90,
+                        180,
+                        270
+                    ]
+                },
+                "tintindex": {
+                    "type": "integer"
+                }
+            },
+            "additionalProperties": false
+        },
+        "element-bound": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "minimum": -16,
+                "maximum": 32
+            },
+            "minItems": 3,
+            "maxItems": 3
+        }
+    }
+}

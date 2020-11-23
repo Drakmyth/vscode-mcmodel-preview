@@ -1,6 +1,7 @@
 import { ExtensionContext, commands, window, ViewColumn, Uri, WebviewPanel } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as Ajv from 'ajv';
 
 export function activate(context: ExtensionContext) {
 	let title = 'Preview <file-name>';
@@ -28,4 +29,20 @@ export function deactivate() {}
 function getWebviewPath(panel: WebviewPanel, ...paths: string[]) {
 	const diskPath = Uri.file(path.join(...paths));
 	return panel.webview.asWebviewUri(diskPath).toString();
+}
+
+export function validateModel(context: ExtensionContext) {
+
+	const modelPath = path.join(context.extensionPath, 'src', 'validation', 'sample-model.json');
+	const schemaPath = path.join(context.extensionPath, 'src', 'validation', 'model.schema.json');
+
+	const model = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
+	const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
+
+	const ajv = new Ajv();
+	const valid = ajv.validate(schema, model);
+	if (!valid) {
+		return ajv.errorsText();
+	}
+	return '';
 }

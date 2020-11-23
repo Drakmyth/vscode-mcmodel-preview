@@ -1,9 +1,19 @@
 import * as assert from 'assert';
+import * as extension from '../../extension';
+import { ExtensionContext } from 'vscode';
+// import * as fs from 'fs';
+// import { mocked } from 'ts-jest/utils';
 
-describe('Extension Test Suite', () => {
-	test('Sample test', () => {
+// jest.mock('fs');
+// const mockfs = mocked(fs, true);
 
-		assert.equal(-1, [1, 2, 3].indexOf(5));
-		assert.equal(-1, [1, 2, 3].indexOf(0));
-	});
+test('Sample test', () => {
+	// mockfs.readFileSync.mockReturnValue("value");
+
+	let context = {
+		extensionPath: 'g:\\Code\\vscode-mcmodel-preview'
+	} as ExtensionContext;
+
+	const errors = extension.validateModel(context);
+	assert.strictEqual(errors, '');
 });
