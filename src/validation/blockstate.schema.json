@@ -1,0 +1,120 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Drakmyth/vscode-mcmodel-preview/master/src/validation/blockstate.schema.json",
+    "type": "object",
+    "properties": {
+        "variants": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/variant"
+            }
+        },
+        "multipart": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "when": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "properties": {
+                                    "OR": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "apply": {
+                        "$ref": "#/definitions/variant"
+                    }
+                }
+            }
+        }
+    },
+    "oneOf": [
+        {
+            "required": [
+                "variants"
+            ]
+        },
+        {
+            "required": [
+                "multipart"
+            ]
+        }
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "model": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "x": {
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        90,
+                        180,
+                        270
+                    ]
+                },
+                "y": {
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        90,
+                        180,
+                        270
+                    ]
+                },
+                "uvlock": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
+        "weighted-model": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/model"
+                },
+                {
+                    "properties": {
+                        "weight": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            ]
+        },
+        "variant": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/model"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/weighted-model"
+                    }
+                }
+            ]
+        }
+    }
+}
