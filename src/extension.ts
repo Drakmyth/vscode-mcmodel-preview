@@ -2,32 +2,50 @@ import { ExtensionContext, commands, window, ViewColumn, Uri, WebviewPanel } fro
 import * as path from 'path';
 import * as fs from 'fs';
 import * as Ajv from 'ajv';
-import * as vscode from 'vscode';
 
 export function activate(context: ExtensionContext) {
-	let command = commands.registerCommand('vscode-mcmodel-preview.view', () => {
-		const editor = vscode.window.activeTextEditor;
-		const filename = path.basename(editor?.document.fileName || '');
-		const title = 'Preview ' + filename;
-		const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
+	const editorMap = new Map();
 
-		const threePath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'three.min.js');
-		const viewerCSSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.css');
-		const viewerJSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.js');
+	context.subscriptions.push(
+		commands.registerCommand('vscode-mcmodel-preview.view', () => {
+			const editor = window.activeTextEditor;
+			const filename = path.basename(editor?.document.fileName || '');
 
-		const viewerHTMLPath = path.join(context.extensionPath, 'src', 'viewer', 'viewer.html');
-		const rawHtml = fs.readFileSync(viewerHTMLPath, "utf-8");
-		const html = rawHtml.replace('{{viewercss-path}}', viewerCSSPath)
-							.replace('{{three-path}}', threePath)
-							.replace('{{viewerjs-path}}', viewerJSPath);
+			if (editorMap.has(filename)) {
+				editorMap.get(filename).reveal(ViewColumn.Beside);
+				return;
+			}
 
-		panel.webview.html = html;
-	});
+			const title = 'Preview ' + filename;
+			const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
+			editorMap.set(filename, panel);
 
-	context.subscriptions.push(command);
+			panel.onDidDispose(() => {
+				editorMap.delete(filename);
+			}, undefined, context.subscriptions);
+
+			const threePath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'three.min.js');
+			const viewerCSSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.css');
+			const viewerJSPath = getWebviewPath(panel, context.extensionPath, 'src', 'viewer', 'viewer.js');
+
+			const viewerHTMLPath = path.join(context.extensionPath, 'src', 'viewer', 'viewer.html');
+			const rawHtml = fs.readFileSync(viewerHTMLPath, "utf-8");
+			const html = rawHtml.replace('{{viewercss-path}}', viewerCSSPath)
+				.replace('{{three-path}}', threePath)
+				.replace('{{viewerjs-path}}', viewerJSPath);
+
+			panel.webview.html = html;
+		})
+	);
+
+	context.subscriptions.push(
+		commands.registerCommand('vscode-mcmodel-preview.update', () => {
+
+		})
+	);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 function getWebviewPath(panel: WebviewPanel, ...paths: string[]) {
 	const diskPath = Uri.file(path.join(...paths));
