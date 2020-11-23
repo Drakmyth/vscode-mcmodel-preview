@@ -50,3 +50,5 @@ This extension is open source! That means if you'd like to try your hand at fixi
 License
 -------
 vscode-mcmodel-preview is licensed under the MIT License (MIT). See LICENSE for details.
+
+Individual assets may be used under different licenses. See assets/README for specific licensing details.
