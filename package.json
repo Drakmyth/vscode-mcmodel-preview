@@ -17,9 +17,28 @@
     "commands": [
       {
         "command": "vscode-mcmodel-preview.view",
-        "title": "Hello World"
+        "title": "Open Preview to the Side",
+        "icon": {
+          "light": "assets/open-preview-light.svg",
+          "dark": "assets/open-preview-dark.svg"
+        }
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "vscode-mcmodel-preview.view",
+          "when": "editorLangId == json"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "vscode-mcmodel-preview.view",
+          "group": "navigation",
+          "when": "editorLangId == json"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
