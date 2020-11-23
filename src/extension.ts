@@ -34,7 +34,7 @@ function getWebviewPath(panel: WebviewPanel, ...paths: string[]) {
 export function validateModel(context: ExtensionContext) {
 
 	const modelPath = path.join(context.extensionPath, 'src', 'validation', 'sample-model.json');
-	const schemaPath = path.join(context.extensionPath, 'src', 'validation', 'model.schema.json');
+	const schemaPath = path.join(context.extensionPath, 'src', 'validation', 'blockmodel.schema.json');
 
 	const model = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
 	const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
