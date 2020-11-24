@@ -1,7 +1,7 @@
 import { ExtensionContext, commands, window, ViewColumn, Uri, WebviewPanel } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ValidateFunction } from 'ajv';
+import { ValidateFunction, ErrorObject } from 'ajv';
 import * as Ajv from 'ajv';
 
 export function activate(context: ExtensionContext) {
@@ -39,9 +39,10 @@ export function activate(context: ExtensionContext) {
 
 			const blockModelSchema = schemas.get(Schema.BLOCKMODEL);
 			if (!blockModelSchema) return;
-			validateModel(blockModelSchema, filepath);
+			const validationErrors = validateModel(blockModelSchema, filepath);
 
-			panel.webview.html = getModelViewerHtml(context, panel);
+			const html = validationErrors.length > 0 ? getValidationErrorHtml(context, validationErrors) : getModelViewerHtml(context, panel);
+			panel.webview.html = html;
 		})
 	);
 
@@ -54,25 +55,33 @@ export function activate(context: ExtensionContext) {
 
 export function deactivate() { }
 
-function getWebviewPath(panel: WebviewPanel, ...paths: string[]) {
+function getWebviewPath(panel: WebviewPanel, ...paths: string[]): string {
 	const diskPath = Uri.file(path.join(...paths));
 	return panel.webview.asWebviewUri(diskPath).toString();
 }
 
-export function validateModel(schema: ValidateFunction, modelPath: string) {
+export function validateModel(schema: ValidateFunction, modelPath: string): ErrorObject[] {
 	const model = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
 
 	const valid = schema(model);
 	if (!valid) {
-		return schema.errors?.map(error => error.toString()).join('; ');
+		return schema.errors || [];
 	}
-	return '';
+	return [];
 }
 
 function compileSchema(schemaPath: string): ValidateFunction {
 	const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 	const ajv = new Ajv();
 	return ajv.compile(schema);
+}
+
+function getValidationErrorHtml(context: ExtensionContext, errors: ErrorObject[]): string {
+	const errorMessages = errors.map(error => '<li>' + error.message + '</li>').join('\n');
+
+	const viewerHTMLPath = path.join(context.extensionPath, 'src', 'viewer', 'errors.html');
+	const rawHtml = fs.readFileSync(viewerHTMLPath, "utf-8");
+	return rawHtml.replace('{{errors}}', errorMessages);
 }
 
 function getModelViewerHtml(context: ExtensionContext, panel: WebviewPanel): string {
