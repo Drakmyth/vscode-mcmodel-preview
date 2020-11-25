@@ -22,6 +22,10 @@
           "light": "assets/open-preview-light.svg",
           "dark": "assets/open-preview-dark.svg"
         }
+      },
+      {
+        "command": "vscode-mcmodel-preview.update",
+        "title": "Update model"
       }
     ],
     "menus": {

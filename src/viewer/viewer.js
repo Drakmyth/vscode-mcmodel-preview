@@ -47,3 +47,13 @@ function onWindowResize(event) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.render(scene, camera);
 }
+
+function onMessageReceived(event) {
+    const message = event.data;
+
+    switch(message.command) {
+        case 'update':
+            const model = message.data;
+            console.log(JSON.stringify(model));
+    }
+}

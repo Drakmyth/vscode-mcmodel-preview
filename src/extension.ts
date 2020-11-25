@@ -22,16 +22,17 @@ export function activate(context: ExtensionContext) {
 			if (!editor) return;
 
 			const filepath = editor.document.fileName;
-			const filename = path.basename(filepath || '');
 
-			if (editorMap.has(filename)) {
-				editorMap.get(filename)?.reveal(ViewColumn.Beside);
+			if (editorMap.has(filepath)) {
+				editorMap.get(filepath)?.reveal(ViewColumn.Beside);
 				return;
 			}
 
+			const filename = path.basename(filepath || '');
 			const title = 'Preview ' + filename;
+
 			const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
-			editorMap.set(filename, panel);
+			editorMap.set(filepath, panel);
 
 			panel.onDidDispose(() => {
 				editorMap.delete(filename);
@@ -39,7 +40,8 @@ export function activate(context: ExtensionContext) {
 
 			const blockModelSchema = schemas.get(Schema.BLOCKMODEL);
 			if (!blockModelSchema) return;
-			const validationErrors = validateModel(blockModelSchema, filepath);
+			const model = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+			const validationErrors = validateModel(blockModelSchema, model);
 
 			const html = validationErrors.length > 0 ? getValidationErrorHtml(context, validationErrors) : getModelViewerHtml(context, panel);
 			panel.webview.html = html;
@@ -48,7 +50,27 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(
 		commands.registerCommand('vscode-mcmodel-preview.update', () => {
+			const editor = window.activeTextEditor;
+			if (!editor) return;
 
+			const filepath = editor.document.fileName;
+			if (!editorMap.has(filepath)) {
+				return;
+			}
+
+			const panel = editorMap.get(filepath) as WebviewPanel;
+
+			const blockModelSchema = schemas.get(Schema.BLOCKMODEL);
+			if (!blockModelSchema) return;
+			const model = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+			const validationErrors = validateModel(blockModelSchema, model);
+
+			if (validationErrors.length > 0) {
+				panel.webview.html = getValidationErrorHtml(context, validationErrors);
+				return;
+			}
+			panel.webview.html = getModelViewerHtml(context, panel);
+			panel.webview.postMessage({command: 'update', data: model});
 		})
 	);
 }
@@ -60,9 +82,7 @@ function getWebviewPath(panel: WebviewPanel, ...paths: string[]): string {
 	return panel.webview.asWebviewUri(diskPath).toString();
 }
 
-export function validateModel(schema: ValidateFunction, modelPath: string): ErrorObject[] {
-	const model = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
-
+export function validateModel(schema: ValidateFunction, model: object): ErrorObject[] {
 	const valid = schema(model);
 	if (!valid) {
 		return schema.errors || [];
