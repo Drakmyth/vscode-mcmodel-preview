@@ -1,8 +1,17 @@
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const cameraAnchor = new THREE.Object3D();
+const grid = new THREE.GridHelper(16, 16);
+grid.position.x = 8;
+grid.position.z = 8;
 cameraAnchor.add(camera);
+cameraAnchor.position.x = 8;
+cameraAnchor.position.z = 8;
+camera.position.z = 25;
+camera.position.y = 15;
+camera.lookAt(cameraAnchor.position);
 scene.add(cameraAnchor);
+scene.add(grid);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -83,6 +92,7 @@ function onMessageReceived(event) {
             const model = message.data;
             scene.clear();
             scene.add(cameraAnchor);
+            scene.add(grid);
             const material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
 
             for (const element of model.elements) {
@@ -90,9 +100,10 @@ function onMessageReceived(event) {
                     element.to[0] - element.from[0],
                     element.to[1] - element.from[1],
                     element.to[2] - element.from[2]);
-                const position = new THREE.Vector3(element.from[0] + scale.x / 2,
-                                                   element.from[1] + scale.y / 2,
-                                                   element.from[2] + scale.z / 2);
+                const position = new THREE.Vector3(
+                    element.from[0] + scale.x / 2,
+                    element.from[1] + scale.y / 2,
+                    element.from[2] + scale.z / 2);
 
                 const geometry = new THREE.BoxGeometry(scale.x, scale.y, scale.z);
                 var facesToRemove = [];
@@ -105,15 +116,16 @@ function onMessageReceived(event) {
                     }
 
                     for (var face of geometry.faces) {
-                        if (!faceNormalsToKeep.find((normal) => normal.x === face.normal.x &&
-                                                                normal.y === face.normal.y &&
-                                                                normal.z === face.normal.z)) {
+                        if (!faceNormalsToKeep.find((normal) =>
+                            normal.x === face.normal.x &&
+                            normal.y === face.normal.y &&
+                            normal.z === face.normal.z)) {
                             facesToRemove.push(face);
                         }
                     }
                 }
 
-                for(var face of facesToRemove) {
+                for (var face of facesToRemove) {
                     const faceIndex = geometry.faces.indexOf(face);
                     geometry.faces.splice(faceIndex, 1);
                 }
@@ -129,8 +141,9 @@ function onMessageReceived(event) {
                     }
                 });
                 const cube = new THREE.Mesh(geometry, material);
-                cube.position = position;
-                camera.position.z = 25;
+                cube.translateX(position.x);
+                cube.translateY(position.y);
+                cube.translateZ(position.z);
                 scene.add(cube);
             }
     }
