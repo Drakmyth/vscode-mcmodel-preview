@@ -5,7 +5,7 @@ import { ValidateFunction, ErrorObject } from 'ajv';
 import * as Ajv from 'ajv';
 
 export function activate(context: ExtensionContext) {
-	const editorMap = new Map<string, WebviewPanel>();
+	let panel: WebviewPanel | null = null;
 	const schemas = new Map<Schema, ValidateFunction>();
 
 	const blockModelSchemaPath = path.join(context.extensionPath, 'src', 'validation', 'blockmodel.schema.json');
@@ -22,54 +22,24 @@ export function activate(context: ExtensionContext) {
 			if (!editor) return;
 
 			const filepath = editor.document.fileName;
-
-			if (editorMap.has(filepath)) {
-				editorMap.get(filepath)?.reveal(ViewColumn.Beside);
-				return;
-			}
-
 			const filename = path.basename(filepath || '');
 			const title = 'Preview ' + filename;
 
-			const panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
-			editorMap.set(filepath, panel);
-
-			panel.onDidDispose(() => {
-				editorMap.delete(filename);
-			}, undefined, context.subscriptions);
+			if (panel) {
+				panel.reveal(ViewColumn.Beside);
+				panel.title = title;
+			} else {
+				panel = window.createWebviewPanel('vscode-mcmodel-preview.view', title, ViewColumn.Beside, { enableScripts: true });
+			}
 
 			const blockModelSchema = schemas.get(Schema.BLOCKMODEL);
 			if (!blockModelSchema) return;
+
 			const model = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
 			const validationErrors = validateModel(blockModelSchema, model);
 
 			const html = validationErrors.length > 0 ? getValidationErrorHtml(context, validationErrors) : getModelViewerHtml(context, panel);
 			panel.webview.html = html;
-		})
-	);
-
-	context.subscriptions.push(
-		commands.registerCommand('vscode-mcmodel-preview.update', () => {
-			const editor = window.activeTextEditor;
-			if (!editor) return;
-
-			const filepath = editor.document.fileName;
-			if (!editorMap.has(filepath)) {
-				return;
-			}
-
-			const panel = editorMap.get(filepath) as WebviewPanel;
-
-			const blockModelSchema = schemas.get(Schema.BLOCKMODEL);
-			if (!blockModelSchema) return;
-			const model = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-			const validationErrors = validateModel(blockModelSchema, model);
-
-			if (validationErrors.length > 0) {
-				panel.webview.html = getValidationErrorHtml(context, validationErrors);
-				return;
-			}
-			panel.webview.html = getModelViewerHtml(context, panel);
 			panel.webview.postMessage({command: 'update', data: model});
 		})
 	);
